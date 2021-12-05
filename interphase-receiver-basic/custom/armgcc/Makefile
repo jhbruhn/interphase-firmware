@@ -45,10 +45,17 @@ $(abspath ../../../../components/libraries/fifo/app_fifo.c) \
 $(abspath ../../../../components/libraries/util/app_util_platform.c) \
 $(abspath ../../../../components/libraries/util/nrf_assert.c) \
 $(abspath ../../../../components/libraries/uart/retarget.c) \
-$(abspath ../../../../components/libraries/uart/app_uart_fifo.c) \
+$(abspath ../../../../components/libraries/uart/app_uart.c) \
 $(abspath ../../../../components/drivers_nrf/delay/nrf_delay.c) \
 $(abspath ../../../../components/drivers_nrf/common/nrf_drv_common.c) \
 $(abspath ../../../../components/drivers_nrf/uart/nrf_drv_uart.c) \
+$(abspath ../../../mitosis-crypto/mitosis-aes-ctr.c) \
+$(abspath ../../../mitosis-crypto/mitosis-aes-ecb.c) \
+$(abspath ../../../mitosis-crypto/mitosis-ckdf.c) \
+$(abspath ../../../mitosis-crypto/mitosis-cmac.c) \
+$(abspath ../../../mitosis-crypto/mitosis-hkdf.c) \
+$(abspath ../../../mitosis-crypto/mitosis-hmac.c) \
+$(abspath ../../../mitosis-crypto/mitosis-keys.c) \
 
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath ../../../../components/toolchain/gcc/gcc_startup_nrf51.s)
@@ -59,12 +66,14 @@ LIBS  = $(abspath ../../../../components/properitary_rf/gzll/gcc/gzll_gcc.a)
 
 #includes common to all targets
 INC_PATHS += -I$(abspath ../../config)
+INC_PATHS += -I$(abspath ../../../mitosis-crypto)
 INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/nrf_soc_nosd)
 INC_PATHS += -I$(abspath ../../../../components/device)
 INC_PATHS += -I$(abspath ../../../../components/libraries/uart)
 INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/hal)
 INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/delay)
 INC_PATHS += -I$(abspath ../../../../components/toolchain/CMSIS/Include)
+INC_PATHS += -I$(abspath ../../../../components/libraries/sha256)
 INC_PATHS += -I$(abspath ../..)
 INC_PATHS += -I$(abspath ../../../../components/libraries/util)
 INC_PATHS += -I$(abspath ../../../../components/drivers_nrf/uart)
@@ -89,7 +98,7 @@ CFLAGS += -DBOARD_CUSTOM
 CFLAGS += -DBSP_DEFINES_ONLY
 CFLAGS += -mcpu=cortex-m0
 CFLAGS += -mthumb -mabi=aapcs --std=gnu99
-CFLAGS += -Wall -Werror -O3 -g3
+CFLAGS += -Wall -Werror -O0 -g3
 CFLAGS += -Wno-unused-function
 CFLAGS += -Wno-unused-variable
 CFLAGS += -mfloat-abi=soft
