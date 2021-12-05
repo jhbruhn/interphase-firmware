@@ -3,6 +3,9 @@ Firmware for Nordic MCUs used in the Interphase Keyboard, contains precompiled .
 This firmware is a dervivative of reversebias' mitosis firmware.
 https://github.com/reversebias/mitosis
 
+It has an implementation for encrypted communication from the mitosis-crypto implementation:
+https://github.com/rossica/mitosis/tree/feature-crypto/mitosis-crypto
+
 ## Install dependencies
 
 Tested on Ubuntu 16.04.2, but should be able to find alternatives on all distros.
