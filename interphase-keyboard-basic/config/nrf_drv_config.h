@@ -80,6 +80,12 @@
 #define RNG_CONFIG_IRQ_PRIORITY     APP_IRQ_PRIORITY_LOW
 #endif
 
+/* ADC */
+#define ADC_ENABLED 1
+
+#if (ADC_ENABLED == 1)
+#define ADC_CONFIG_IRQ_PRIORITY       3
+#endif
 
 #include "nrf_drv_config_validation.h"
 

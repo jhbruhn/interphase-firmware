@@ -1,18 +1,32 @@
-
+#define INVERT
 //#define COMPILE_RIGHT
 #define COMPILE_LEFT
 
+#include <stdbool.h>
+
 #include <string.h>
 
+
+
 #include "interphase.h"
-#include <stdbool.h>
+
 #include "mitosis-crypto.h"
+
 #include "nrf_delay.h"
+
+#include "nrf_drv_adc.h"
+
 #include "nrf_drv_clock.h"
+
 #include "nrf_drv_config.h"
+
 #include "nrf_drv_rtc.h"
+
 #include "nrf_gpio.h"
+
 #include "nrf_gzll.h"
+
+
 
 /*****************************************************************************/
 /** Configuration */
@@ -64,6 +78,14 @@ static volatile bool debouncing = false;
 // Debug helper variables
 static volatile bool init_ok, enable_ok, push_ok, pop_ok, tx_success;
 
+
+
+static nrf_drv_adc_channel_t m_channel_bat =
+
+    NRF_DRV_ADC_DEFAULT_CHANNEL(NRF_ADC_CONFIG_INPUT_2);
+
+
+
 // Setup switch pins with pullups
 static void gpio_config(void) {
   nrf_gpio_cfg_sense_input(C01, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
@@ -79,6 +101,53 @@ static void gpio_config(void) {
   nrf_gpio_cfg_output(R03);
   nrf_gpio_cfg_output(R04);
   nrf_gpio_cfg_output(R05);
+}
+
+static void adc_config(void) {
+  ret_code_t ret_code;
+  // Initialize ADC
+  nrf_drv_adc_config_t config = NRF_DRV_ADC_DEFAULT_CONFIG;
+
+  nrf_drv_adc_init(&config, 0);
+  // APP_ERROR_CHECK(ret_code);
+  //  Configure and enable ADC channel 0
+
+  m_channel_bat.config.config.input =
+      NRF_ADC_CONFIG_SCALING_INPUT_ONE_THIRD;  // 3 * 1.2 is the scale here, at
+
+
+
+  nrf_drv_adc_channel_enable(&m_channel_bat);
+}
+
+static void power_off(void) {
+  NRF_POWER->RAMON = POWER_RAMON_ONRAM0_RAM0On << POWER_RAMON_ONRAM0_Pos |
+
+                     POWER_RAMON_ONRAM1_RAM1On << POWER_RAMON_ONRAM1_Pos |
+
+                     POWER_RAMON_OFFRAM0_RAM0Off << POWER_RAMON_OFFRAM0_Pos |
+
+                     POWER_RAMON_OFFRAM1_RAM1Off << POWER_RAMON_OFFRAM1_Pos;
+
+  NRF_POWER->RAMONB = POWER_RAMONB_ONRAM2_RAM2Off << POWER_RAMONB_ONRAM2_Pos |
+
+                      POWER_RAMONB_ONRAM3_RAM3Off << POWER_RAMONB_ONRAM3_Pos |
+
+                      POWER_RAMONB_OFFRAM2_RAM2Off << POWER_RAMONB_OFFRAM2_Pos |
+
+                      POWER_RAMONB_OFFRAM3_RAM3Off << POWER_RAMONB_OFFRAM3_Pos;
+
+  NRF_POWER->SYSTEMOFF = 1;
+}
+
+static void check_power(void) {
+  nrf_adc_value_t value = 0;
+  nrf_drv_adc_sample_convert(&m_channel_bat, &value);
+  if (value < 280) {  // (1024 / 3.6) is the maximum, we want to stop at 1V,
+
+                      // thus this i guess
+    power_off();
+  }
 }
 
 // Return the key states of one row
@@ -164,6 +233,7 @@ static void send_data(void) {
 // 8Hz held key maintenance, keeping the reciever keystates valid
 static void handler_maintenance(nrf_drv_rtc_int_type_t int_type) {
   send_data();
+  check_power();
 }
 
 // 1000Hz debounce sampling
@@ -252,6 +322,8 @@ int main() {
 
   // Enable Gazell to start sending over the air
   nrf_gzll_enable();
+
+  adc_config();
 
   // Configure 32kHz xtal oscillator
   lfclk_config();
